@@ -33,13 +33,9 @@ def run():
     links = soup.find_all(class_='ipc-title-link-wrapper')
     website = urlparse(url)
     end_links = [f'{website.scheme}://{website.netloc}{link['href']}' for link in links if 'ql' not in link['href']]
-    i = 0
     for link in end_links:
         print(f'Processing {link}')
         process_link(link)
-        i += 1
-        if i == 10:
-            break
     print(top_actors)
     with open('top_actors.txt', 'w', encoding='utf-8') as file:
         for actor, count in top_actors.items():
