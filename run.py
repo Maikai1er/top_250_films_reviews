@@ -1,12 +1,11 @@
-from urllib.parse import urlparse, urljoin
-
+from urllib.parse import urlparse
 from bs4 import BeautifulSoup
 import requests
 
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 6.3; Win 64 ; x64) Apple WeKit /537.36(KHTML , like Gecko) '
                   'Chrome/80.0.3987.162 Safari/537.36',
-    'Accept-Language': 'en-US,en;q=0.9'
+    'Accept-Language': 'en-US,en;q=0.9',
 }
 
 
@@ -56,23 +55,42 @@ def process_link(link):
             existing_actor.add_film(film_name)
 
 
-def run():
+def get_top_actors():
     url = "https://www.imdb.com/chart/top/"
     html = requests.get(url, headers=headers).text
     soup = BeautifulSoup(html, 'html.parser')
 
     links = soup.find_all(class_='ipc-title-link-wrapper')
     website = urlparse(url)
-    end_links = [f'{website.scheme}://{website.netloc}{link['href']}' for link in links if 'ql' not in link['href']]
-    for link in end_links:
-        print(f'Processing {link}')
-        process_link(link)
-    with open('top_actors.txt', 'w', encoding='utf-8') as file:
-        for actor in top_actors:
-            actor_data = {
-                'name': top_actors[actor].get_actor_name(),
-                'films_count': top_actors[actor].get_films_count(),
-                'films': top_actors[actor].get_films(),
-            }
-            file.write(f'{str(actor_data)}\n')
-    # print(end_links)
+    film_links = [f'{website.scheme}://{website.netloc}{link['href']}' for link in links if 'ql' not in link['href']]
+    i = 0
+    for link in film_links:
+        if i < 5:
+            print(f'Processing {link}')
+            process_link(link)
+            i += 1
+    print(top_actors['Tim Robbins'].get_actor_name())
+    return top_actors
+
+
+def sort_top_actors():
+    sorted_actors = sorted(top_actors.items(), key=lambda item: (-item[1].films_count, item[0]))
+    print(sorted_actors)
+    return sorted_actors
+
+
+def write_top_actors_to_file(filename):
+    sorted_actors = sort_top_actors()
+    with open(filename, 'w', encoding='utf-8') as file:
+        for actor_name, actor_obj in sorted_actors:
+            file.write(f"{'-'*30}\n")
+            file.write(f"Name: {actor_obj.get_actor_name()}\n")
+            file.write(f"Films Count: {actor_obj.get_films_count()}\n")
+            file.write("Films:\n")
+            for film in actor_obj.get_films():
+                file.write(f"- {film}\n")
+
+
+print(get_top_actors())
+
+write_top_actors_to_file('top_actors.txt')
