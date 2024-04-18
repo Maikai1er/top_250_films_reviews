@@ -34,38 +34,49 @@ class Actor:
         return self.films
 
 
-top_actors = {}
+def write_actors_to_list(actors):
+    pass
 
 
 def process_link(link):
+    top_actors_in_film = {}
     html = requests.get(link, headers=headers).text
     soup = BeautifulSoup(html, 'html.parser')
     film_name = soup.find(class_='hero__primary-text').text
     actors = soup.find_all(class_='ipc-lockup-overlay ipc-focusable', href=lambda href: href and '/name/' in href)
+
     for actor in actors:
         actor_name = actor['aria-label'].strip()
-        if actor_name not in top_actors:
-            new_actor = Actor(actor_name)
-            new_actor.increase_films_count()
-            new_actor.add_film(film_name)
-            top_actors[actor_name] = new_actor
-        else:
-            existing_actor = top_actors[actor_name]
-            existing_actor.increase_films_count()
-            existing_actor.add_film(film_name)
+        new_actor = Actor(actor_name)
+        new_actor.increase_films_count()
+        new_actor.add_film(film_name)
+        top_actors_in_film[actor_name] = new_actor
+
+    return top_actors_in_film
 
 
 def get_top_actors():
+    top_actors = {}
     url = "https://www.imdb.com/chart/top/"
     html = requests.get(url, headers=headers).text
-    soup = BeautifulSoup(html, 'html.parser')
 
+    soup = BeautifulSoup(html, 'html.parser')
     links = soup.find_all(class_='ipc-title-link-wrapper')
     website = urlparse(url)
+
     film_links = [f'{website.scheme}://{website.netloc}{link['href']}' for link in links if 'ql' not in link['href']]
     for link in film_links:
         print(f'Processing {link}')
-        process_link(link)
+        top_actors_in_film = process_link(link)
+
+        for actor_name, actor_obj in top_actors_in_film.items():
+            if actor_name not in top_actors:
+                top_actors[actor_name] = actor_obj
+            else:
+                existing_actor = top_actors[actor_name]
+                existing_actor.increase_films_count()
+                existing_actor.add_film(actor_obj.get_films()[0])
+
     return top_actors
 
 
@@ -74,7 +85,8 @@ def sort_top_actors(top_actors):
 
 
 def write_top_actors_to_file(filename, actors_list):
-    with open(filename, 'w', encoding='utf-8') as file:
+    filepath = 'C:\\Dev\\Python\\my_projects\\top_250_movies_actors\\' + filename
+    with open(filepath, 'w', encoding='utf-8') as file:
         for actor_name, actor_obj in actors_list:
             file.write(f"{'-'*30}\n")
             file.write(f"Name: {actor_obj.get_actor_name()}\n")
