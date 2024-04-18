@@ -34,10 +34,6 @@ class Actor:
         return self.films
 
 
-def write_actors_to_list(actors):
-    pass
-
-
 def process_link(link):
     top_actors_in_film = {}
     html = requests.get(link, headers=headers).text
@@ -84,8 +80,7 @@ def sort_top_actors(top_actors):
     return sorted(top_actors.items(), key=lambda item: (-item[1].films_count, item[0]))
 
 
-def write_top_actors_to_file(filename, actors_list):
-    filepath = 'C:\\Dev\\Python\\my_projects\\top_250_movies_actors\\' + filename
+def write_top_actors_to_file(filepath, actors_list):
     with open(filepath, 'w', encoding='utf-8') as file:
         for actor_name, actor_obj in actors_list:
             file.write(f"{'-'*30}\n")

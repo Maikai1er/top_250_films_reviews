@@ -33,13 +33,15 @@ def main():
     time.sleep(1)
     print(f'Writing the top 250 actors to {filename}...')
 
-    write_top_actors_to_file(filename, sorted_top_actors)
+    directory = 'C:\\Dev\\Python\\my_projects\\top_250_movies_actors\\'
+    filepath = directory + filename
+    write_top_actors_to_file(filepath, sorted_top_actors)
 
     time.sleep(1)
     print('Now you can see the top 250 actors list!')
     time.sleep(1)
 
-    with open(filename, 'r') as file:
+    with open(filepath, 'r') as file:
         print(file.read())
 
     time.sleep(1)
