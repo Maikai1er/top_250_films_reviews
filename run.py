@@ -63,34 +63,22 @@ def get_top_actors():
     links = soup.find_all(class_='ipc-title-link-wrapper')
     website = urlparse(url)
     film_links = [f'{website.scheme}://{website.netloc}{link['href']}' for link in links if 'ql' not in link['href']]
-    i = 0
     for link in film_links:
-        if i < 5:
-            print(f'Processing {link}')
-            process_link(link)
-            i += 1
-    print(top_actors['Tim Robbins'].get_actor_name())
+        print(f'Processing {link}')
+        process_link(link)
     return top_actors
 
 
-def sort_top_actors():
-    sorted_actors = sorted(top_actors.items(), key=lambda item: (-item[1].films_count, item[0]))
-    print(sorted_actors)
-    return sorted_actors
+def sort_top_actors(top_actors):
+    return sorted(top_actors.items(), key=lambda item: (-item[1].films_count, item[0]))
 
 
-def write_top_actors_to_file(filename):
-    sorted_actors = sort_top_actors()
+def write_top_actors_to_file(filename, actors_list):
     with open(filename, 'w', encoding='utf-8') as file:
-        for actor_name, actor_obj in sorted_actors:
+        for actor_name, actor_obj in actors_list:
             file.write(f"{'-'*30}\n")
             file.write(f"Name: {actor_obj.get_actor_name()}\n")
             file.write(f"Films Count: {actor_obj.get_films_count()}\n")
             file.write("Films:\n")
             for film in actor_obj.get_films():
                 file.write(f"- {film}\n")
-
-
-print(get_top_actors())
-
-write_top_actors_to_file('top_actors.txt')
